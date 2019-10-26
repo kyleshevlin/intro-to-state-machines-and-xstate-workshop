@@ -1,4 +1,5 @@
 # Workshop - Section 1
+## A Journey of Discovery
 
 What if we didn't have "state", and things were just always what they were? That would be a bit of a strange world. Thinking about that too much might hurt your brain. But, let's consider an absurd example anyways, a light bulb.
 
@@ -57,5 +58,23 @@ That bottom-left "state" is impossible. What if we found a way to enumerate only
 
 ---
 
-Our `betterBulb` is built by changing our mind from controlling pieces of state to representing our enumerated states atomically. We can do this with an object that maps out our possible states. We then design our function so that it can only return one of these three states, and cannot get into an impossible one.
+Our `betterBulb` is built by changing our mind from controlling pieces of state to representing our enumerated states atomically. We can do this with an object that maps out our possible states. We then design our function so that it can only return one of these three states and cannot get into an impossible one.
 You can see the solution in `better-bulb.js`
+
+It's worth pointing out that we've made a distinctly different data structure for our "state" with this function. For starters, we only have our three states, `lit`, `unlit`, and `broken`. We've also made it clear that there are a finite number of ways we can move from one state to another. Look through the code and take a minute to define these transitions.
+
+We can do the following:
+* `lit -> unlit`
+* `unlit -> lit`
+* `lit -> broken`
+* `unlit -> broken`
+
+That's it! We only have four possible transitions. So we have a distinct set of states, and a distinct set of transitions between those states, does anyone know what data structure we have?
+
+We have a graph! A directed graph, specifically
+
+For those of you who might not know what a graph is (and haven't checked out my Data Structures and Algorithms course yet), a graph is a data structure made up of "nodes" linked to each other by "edges". In the case of our states, each state is a node, and each transition represents an "edge" between our nodes. We have a graph that looks like this:
+
+![](../images/lightBulbGraph.png)
+
+I want this image and concept firmly planted in our minds as we continue this workshop, as learning to think of state in this way will not only help state machines make more sense, but help you write more robust programs as well.
