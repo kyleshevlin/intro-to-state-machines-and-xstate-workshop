@@ -21,7 +21,7 @@ function moreAccurateBulb() {
       return isBroken
     },
     break() {
-      isBroken = !isBroken
+      isBroken = true
     },
   }
 }
