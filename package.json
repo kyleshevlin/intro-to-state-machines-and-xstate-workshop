@@ -1,0 +1,19 @@
+{
+  "name": "kyles-state-machine-workshop",
+  "version": "1.0.0",
+  "description": "Kyle Shevlin's State Machine and XState workshop",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kyleshevlin/intro-to-state-machines-and-xstate-workshop.git"
+  },
+  "author": "Kyle Shevlin <kyle.a.shevlin@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kyleshevlin/intro-to-state-machines-and-xstate-workshop/issues"
+  },
+  "homepage": "https://github.com/kyleshevlin/intro-to-state-machines-and-xstate-workshop#readme"
+}
