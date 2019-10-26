@@ -21,7 +21,7 @@ function alwaysUnlitBulb() {
 }
 
 function lamp(bulb) {
-  console.log(bulb.lit)
+  console.log(`Bulb is lit: ${bulb.lit}`)
 }
 
 lamp(alwaysLitBulb())

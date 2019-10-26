@@ -22,9 +22,12 @@ function workingLightBulb() {
 }
 
 const bulb = workingLightBulb()
+const logIsLit = () => {
+  console.log(`Bulb is lit: ${bulb.isLit()}`)
+}
 
-console.log(bulb.isLit())
+logIsLit()
 bulb.toggle()
-console.log(bulb.isLit())
+logIsLit()
 bulb.toggle()
-console.log(bulb.isLit())
+logIsLit()
