@@ -77,4 +77,4 @@ For those of you who might not know what a graph is (and haven't checked out my 
 
 ![](../images/lightBulbGraph.png)
 
-I want this image and concept firmly planted in our minds as we continue this workshop, as learning to think of state in this way will not only help state machines make more sense, but help you write more robust programs as well.
+I want this image and concept firmly planted in our minds as we continue this workshop. Thinking of "state" in this way, as a directed graph, will not only help state machines make sense, but will help you write more robust software as well.
