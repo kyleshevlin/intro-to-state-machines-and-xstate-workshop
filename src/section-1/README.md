@@ -77,4 +77,6 @@ For those of you who might not know what a graph is (and haven't checked out my 
 
 ![](../images/lightBulbGraph.png)
 
+_I made that image with this website: [https://csacademy.com/app/graph_editor/](https://csacademy.com/app/graph_editor/)_
+
 I want this image and concept firmly planted in our minds as we continue this workshop. Thinking of "state" in this way, as a directed graph, will not only help state machines make sense, but will help you write more robust software as well.
