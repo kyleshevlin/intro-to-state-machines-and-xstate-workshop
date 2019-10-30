@@ -522,20 +522,20 @@ If we want an action to happen on a transition, then it makes sense to define th
     on: {
       BREAK: {
         target: 'broken',
-        actions: [() => { console.log('The bulb broke while lit')}]
+        actions: [() => { console.log('The bulb broke while lit') }]
       }
     }
   }
 }
 ```
 
-Now our interpreter doesn't know how to handle an event that points to an object instead of a string. We can rectify this by making _every_ transition an object, and we'll keep the string as a special shorthand in our machine.
+Now our machine doesn't know how to handle an event that points to an object instead of a string. We can rectify this by making _every_ transition an object. A transition that is a string will be a shorthand for `{ target: transition }`.
 
 ```javascript
 const toTransitionObject = transition =>
   typeof transition === 'string' ? { target: transition } : transition
 
-function interpret(machine) {
+function createMachine(config) {
   //...
   return {
     //...
@@ -552,25 +552,52 @@ function interpret(machine) {
 }
 ```
 
-So far not much as changed, but now that transitions can be objects, we can destructure `actions` from it as well.
+Now our machine can handle when `transition` is a string or an object. Next we have to be able to respond to `actions` put on that object.
+
+To start, we can destructure `actions` off of the `transition` object, and for ease of use, we're going to default assign it to an empty array.
 
 ```javascript
 const { target, actions = [] } = toTransitionObject(transition)
 ```
 
-Then all we have to do to fire the actions is:
+Now, we have to update the state objects returned by `machine.transition` to have an array of `actions` on them. One thing to remember, `machine.transition` is a pure function. So we never create side effects from the machine. The interpreter is in charge of dealing with side effects.
 
-```javascript 
+To start, this means we update our `initialState` object to have an empty array of `actions` (this will get updated later, and you'll see why):
+
+```javascript
+{
+  initialState: {
+    actions: [],
+    value: config.initial
+  }
+}
+```
+
+Next, in our `transitionFailure` object, we'll also add an empty array of actions.
+
+```javascript
+const transitionFailure = {
+  actions: [],
+  changed: false,
+  value,
+}
+```
+
+Lastly, we're going to take the actions from the transition object and put them on the returned state.
+
+```javascript
 const { target, actions = [] } = toTransitionObject(transition)
 
-actions.forEach(action => {
-  action()
-})
+return {
+  actions,
+  changed: true,
+  value: target
+}
 ```
 
 Awesome! Now we are gonna fire an action when we fire the `BREAK` event and take the transition to broken.
 
-We're not done though. The first improvement is that it might be useful to pass the event _into_ our action as an argument. See, one thing we didn't specify before, but the `event` passed to `service.send()` doesn't have to be a string. Just like transitions, we can use a string shorthand for an object. Thus, we can send an object with a `type` property of our event. Should we ever want to pass more information down on our event, we can give send an event object. Like so:
+We're not done though. The first improvement to make is that it might be useful to pass the event _into_ our action as an argument. So far, we've only been sending events as strings, but there's nothing to stop us from allowing an event object with more info stored in that object. This way, the string becomes a short hand for an event object (`{ type: event }`). Let's add a `toEventObject` function to handle this data massaging.
 
 ```javascript
 //...
@@ -578,7 +605,7 @@ const toEventObject = event =>
   typeof event === 'string' ? { type: event } : event
 
 //...
-function interpret(machine) {
+function createMachine(config) {
   //...
   return {
     //...
@@ -589,11 +616,23 @@ function interpret(machine) {
       const eventObject = toEventObject(event)
       const transition = stateConfig.on[eventObject.type]
       //...
-      actions.forEach(action => {
-        action(eventObject)
-      })
-      //...
     }
+  }
+}
+```
+
+And we can use it in the interpreter as well to call these actions and pass them the event object.
+
+```javascript
+function interpret(machine) {
+  //...
+  send: event => {
+    //...
+    state = machine.transition(state, event)
+    state.actions.forEach(action => {
+      action(toEventObject(event))
+    })
+    //...
   }
 }
 ```
@@ -624,27 +663,111 @@ const nextStateConfig = states[target]
 const allActions = []
   .concat(actions, nextStateConfig.entry)
   .filter(x => x)
-
-allActions.forEach(action => {
-  action(eventObject)
-})
 ```
 
 We actually did something pretty clever here. There's no guarantee that `nextStateConfig.entry` is defined. By calling `filter` with an identity function, each action is coerced into a boolean, and `undefined` items are filtered out.
+
+For the sake of my own sanity and the smallest improvement in the code, I'm going to pull the identity function out so it's not created every time we filter.
+
+```javascript
+const identity = x => x
+
+//...
+const allActions = []
+  .concat(actions, nextStateConfig.entry)
+  .filter(identity)
+```
 
 If we can call actions when we enter a state, then it makes sense to be able to call them when we exit a state as well.
 
 ```javascript
 const allActions = []
   .concat(stateConfig.exit, actions, nextStateConfig.entry)
-  .filter(x => x)
-
-allActions.forEach(action => {
-  action(eventObject)
-})
+  .filter(identity)
 ```
 
-I want to take a second to point out the order of actions getting called, it always goes in this order, current state's `exit`, the transition actions, and then the next state's `entry`. This is true of XState as well, so when we get to that section all of this will be very familiar.
+I want to take a second to point out the order of actions getting called, it always goes in this order, current state's `exit`, the transition actions, and then the next state's `entry`. This is true of XState as well, so when we get to that section of the workshop, all of this will be very familiar.
+
+Now that we have entry actions, we actually need to update our `initialState` in our machine to return them.
+
+```javascript
+const toArray = value => value === undefined ? [] : [].concat(value)
+
+function createMachine(config) {
+  const { id, initial, states } = config
+
+  return {
+    initialState: {
+      actions: toArray(states[initial].entry)
+    }
+  }
+}
+```
+
+I want to add one last feature to actions that'll not do much to improve our interpreter now, but will help us in the near future. I want to normalize our actions, so that each one is an object. I'm going to do this with another function that massages an action into the shape I want.
+
+```javascript
+const toActionObject = action => {
+  switch (true) {
+    case typeof action === 'string':
+      return { type: action }
+
+    case typeof action === 'function':
+      return { type: action.name, exec: action }
+
+    default:
+      return action
+  }
+}
+```
+
+Now that we have `toActionObject`, we need to map our actions with it in two places, and update how we call our actions in the interpreter.
+
+```javascript
+const toActionObject = action => {
+  switch (true) {
+    case typeof action === 'string':
+      return { type: action }
+
+    case typeof action === 'function':
+      return { type: action.name, exec: action }
+
+    default:
+      return action
+  }
+}
+
+function createMachine(config) {
+  const { id, initial, states } = config
+
+  return {
+    initialState: {
+      actions: toArray(states[initial].entry).map(toActionObject)
+    },
+    transition(state, event) {
+      //...
+      const allActions = []
+        .concat(stateConfig.exit, actions, nextStateConfig.entry)
+        .filter(identity)
+        .map(toActionObject)
+    }
+  }
+}
+
+//...
+function interpret(machine) {
+  //...
+  send: event => {
+    //...
+    state.actions.forEach(({ exec }) => {
+      exec && exec(toEventObject(event))
+    })
+    //...
+  }
+}
+```
+
+Now a user can pass an action in as a string shorthand. It won't do anything with our version of machine and interpreter, but this will help us in the next section and will familiarize you with the XState API for actions.
 
 ---
 
