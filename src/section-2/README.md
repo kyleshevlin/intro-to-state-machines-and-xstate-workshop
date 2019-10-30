@@ -644,5 +644,11 @@ allActions.forEach(action => {
 })
 ```
 
+I want to take a second to point out the order of actions getting called, it always goes in this order, current state's `exit`, the transition actions, and then the next state's `entry`. This is true of XState as well, so when we get to that section all of this will be very familiar.
+
+---
+
+Add `context` here
+
 
 
