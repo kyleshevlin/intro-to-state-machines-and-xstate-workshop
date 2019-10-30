@@ -18,6 +18,12 @@
   },
   "homepage": "https://github.com/kyleshevlin/intro-to-state-machines-and-xstate-workshop#readme",
   "dependencies": {
-    "jest": "^24.9.0"
+    "jest": "^24.9.0",
+    "jest-extended": "^0.11.2"
+  },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "jest-extended"
+    ]
   }
 }

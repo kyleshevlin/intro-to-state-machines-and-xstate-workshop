@@ -507,12 +507,142 @@ It's a bit weird that we'd have to trigger a function through a subscription lik
 
 ---
 
+So far, we've made a machine that transitions between states, but currently has very little, to almost no effect on the world outside of our machine. That doesn't make our machine as useful as it could be. In order to do anything meaningful with a program we have to _eventually_ have an impact on the world outside of program. Whether that's showing something on a screen, passing data to a third-party service, etc, being able to control these effects with a machine is powerful.
 
+When it comes to state machines, there are two categories of side-effects we can create: actions and activities. We're going to cover activities later in the workshop, so for now I'll talk cover actions.
 
+An action is a one-time, "fire and forget" side effect. Call a function, something will happen somewhere. What if our lightBulb machine was actually a smart light bulb machine, so that when it transitioned to the `broken` state, we called a function to let the user know you're bulb broke. How can we implement this?
 
+If we want an action to happen on a transition, then it makes sense to define this somehow on the transition. In our machine, we have these events, `BREAK` and `TOGGLE` and the target other states `broken` and either `lit` or `unlit`. What if we made it optional to add an `actions` property somehow on that transition? Whenever I take the `BREAK` event in either `lit` or `unlit`, I'd like to fire an action as I transition to `broken`. Without implementing how it'll work, let's update our machine config to reflect our wants.
 
+```javascript
+//..
+{
+  lit: {
+    on: {
+      BREAK: {
+        target: 'broken',
+        actions: [() => { console.log('The bulb broke while lit')}]
+      }
+    }
+  }
+}
+```
 
+Now our interpreter doesn't know how to handle an event that points to an object instead of a string. We can rectify this by making _every_ transition an object, and we'll keep the string as a special shorthand in our machine.
 
+```javascript
+const toTransitionObject = transition =>
+  typeof transition === 'string' ? { target: transition } : transition
+
+function interpret(machine) {
+  //...
+  return {
+    //...
+    transition(state, event) {
+      //...
+      const { target } = toTransitionObject(transition)
+
+      return {
+        value: target,
+        changed: true
+      }
+    }
+  }
+}
+```
+
+So far not much as changed, but now that transitions can be objects, we can destructure `actions` from it as well.
+
+```javascript
+const { target, actions = [] } = toTransitionObject(transition)
+```
+
+Then all we have to do to fire the actions is:
+
+```javascript 
+const { target, actions = [] } = toTransitionObject(transition)
+
+actions.forEach(action => {
+  action()
+})
+```
+
+Awesome! Now we are gonna fire an action when we fire the `BREAK` event and take the transition to broken.
+
+We're not done though. The first improvement is that it might be useful to pass the event _into_ our action as an argument. See, one thing we didn't specify before, but the `event` passed to `service.send()` doesn't have to be a string. Just like transitions, we can use a string shorthand for an object. Thus, we can send an object with a `type` property of our event. Should we ever want to pass more information down on our event, we can give send an event object. Like so:
+
+```javascript
+//...
+const toEventObject = event =>
+  typeof event === 'string' ? { type: event } : event
+
+//...
+function interpret(machine) {
+  //...
+  return {
+    //...
+    transition(state, event) {
+      const { value } = toStateObject(state)
+      const stateConfig = states[value]
+      //...
+      const eventObject = toEventObject(event)
+      const transition = stateConfig.on[eventObject.type]
+      //...
+      actions.forEach(action => {
+        action(eventObject)
+      })
+      //...
+    }
+  }
+}
+```
+
+Cool, now if we wanted to send some info such as room of the house the bulb is that broke, we could send `bulbService.send({ type: 'BREAK', location: 'living room' })` and then be able to do something with `location` in our action.
+
+The next improvement we can make is that there are not only actions that happen on transitions, but we can define `exit` and `entry` actions on state.
+
+Rather than fire an action on each transition to `broken`, what if we fired an action whenever we entered the `broken` state instead. Let's adjust our config to suit our needs and then write the code to match it.
+
+```javascript
+{
+  states: {
+    //...
+    broken: {
+      entry: [(event) => { console.log(`I broke due to ${event.type}`) }]
+    }
+  }
+}
+```
+
+Now we potentially have more actions than our current code can handle. We need to concatenate the entry actions of the next state some how.
+
+```javascript
+//...
+const { target, actions = [] } = toTransitionObject(transition)
+const nextStateConfig = states[target]
+const allActions = []
+  .concat(actions, nextStateConfig.entry)
+  .filter(x => x)
+
+allActions.forEach(action => {
+  action(eventObject)
+})
+```
+
+We actually did something pretty clever here. There's no guarantee that `nextStateConfig.entry` is defined. By calling `filter` with an identity function, each action is coerced into a boolean, and `undefined` items are filtered out.
+
+If we can call actions when we enter a state, then it makes sense to be able to call them when we exit a state as well.
+
+```javascript
+const allActions = []
+  .concat(stateConfig.exit, actions, nextStateConfig.entry)
+  .filter(x => x)
+
+allActions.forEach(action => {
+  action(eventObject)
+})
+```
 
 
 
