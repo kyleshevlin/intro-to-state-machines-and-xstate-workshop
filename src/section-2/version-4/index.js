@@ -1,3 +1,5 @@
+const toArray = value => (value === undefined ? [] : [].concat(value))
+
 const toStateObject = state =>
   typeof state === 'string' ? { value: state } : state
 
@@ -7,13 +9,29 @@ const toEventObject = event =>
 const toTransitionObject = transition =>
   typeof transition === 'string' ? { target: transition } : transition
 
+const toActionObject = action => {
+  switch (true) {
+    case typeof action === 'string':
+      return { type: action }
+
+    case typeof action === 'function':
+      return { type: action.name, exec: action }
+
+    default:
+      return action
+  }
+}
+
 const identity = x => x
 
 function createMachine(config) {
   const { id, initial, states } = config
 
   return {
-    initialState: { value: initial },
+    initialState: {
+      actions: toArray(states[initial].entry).map(toActionObject),
+      value: initial,
+    },
     transition(state, event) {
       const { value } = toStateObject(state)
       const stateConfig = states[value]
@@ -25,8 +43,9 @@ function createMachine(config) {
       }
 
       const transitionFailure = {
-        value,
+        actions: [],
         changed: false,
+        value,
       }
 
       if (!stateConfig.on) {
@@ -45,14 +64,12 @@ function createMachine(config) {
       const allActions = []
         .concat(stateConfig.exit, actions, nextStateConfig.entry)
         .filter(identity)
-
-      allActions.forEach(action => {
-        action(eventObject)
-      })
+        .map(toActionObject)
 
       return {
-        value: target,
+        actions: allActions,
         changed: true,
+        value: target,
       }
     },
   }
@@ -71,6 +88,9 @@ function interpret(machine) {
       }
 
       state = machine.transition(state, event)
+      state.actions.forEach(({ exec }) => {
+        exec && exec(toEventObject(event))
+      })
       listeners.forEach(listener => listener(state))
     },
     start: () => {
