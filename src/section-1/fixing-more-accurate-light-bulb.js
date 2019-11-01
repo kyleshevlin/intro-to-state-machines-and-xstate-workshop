@@ -1,5 +1,6 @@
 // This is what we have
 
+// eslint-disable-next-line
 function moreAccurateBulb() {
   let isLit = false
   let isBroken = false
