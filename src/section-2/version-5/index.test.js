@@ -1,11 +1,8 @@
-const { createMachine, interpret } = require('./index')
+const { assign, createMachine, interpret } = require('./index')
 
 const config = {
   id: 'light-bulb',
   initial: 'unlit',
-  context: {
-    foo: 'bar',
-  },
   states: {
     lit: {
       on: {
@@ -30,10 +27,7 @@ const config = {
 describe('createMachine', () => {
   it('should have an initialState property', () => {
     const machine = createMachine(config)
-    expect(machine.initialState).toEqual({
-      value: 'unlit',
-      context: { foo: 'bar' },
-    })
+    expect(machine.initialState).toEqual({ actions: [], value: 'unlit' })
   })
 
   it('should have a defined `transition` method', () => {
@@ -44,24 +38,24 @@ describe('createMachine', () => {
   it('should take transition when given a valid state and event', () => {
     const machine = createMachine(config)
     expect(machine.transition('lit', 'TOGGLE')).toEqual({
+      actions: [],
       value: 'unlit',
       changed: true,
-      context: { foo: 'bar' },
     })
     expect(machine.transition('unlit', 'TOGGLE')).toEqual({
+      actions: [],
       value: 'lit',
       changed: true,
-      context: { foo: 'bar' },
     })
     expect(machine.transition('lit', 'BREAK')).toEqual({
+      actions: [],
       value: 'broken',
       changed: true,
-      context: { foo: 'bar' },
     })
     expect(machine.transition('unlit', 'BREAK')).toEqual({
+      actions: [],
       value: 'broken',
       changed: true,
-      context: { foo: 'bar' },
     })
   })
 
@@ -75,64 +69,29 @@ describe('createMachine', () => {
   it('should not transition when given an invalid event', () => {
     const machine = createMachine(config)
     expect(machine.transition('lit', 'INVALID_EVENT')).toEqual({
+      actions: [],
       value: 'lit',
       changed: false,
-      context: { foo: 'bar' },
     })
     expect(machine.transition('unlit', 'INVALID_EVENT')).toEqual({
+      actions: [],
       value: 'unlit',
       changed: false,
-      context: { foo: 'bar' },
     })
     expect(machine.transition('broken', 'INVALID_EVENT')).toEqual({
+      actions: [],
       value: 'broken',
       changed: false,
-      context: { foo: 'bar' },
     })
   })
 
-  it('should fire actions on a transition', () => {
-    const litToBrokenAction = jest.fn()
-    const machine = createMachine({
-      id: 'light-bulb',
-      initial: 'unlit',
-      context: { foo: 'bar' },
-      states: {
-        lit: {
-          on: {
-            TOGGLE: 'unlit',
-            BREAK: {
-              target: 'broken',
-              actions: [litToBrokenAction],
-            },
-          },
-        },
-        unlit: {
-          on: {
-            TOGGLE: 'lit',
-            BREAK: 'broken',
-          },
-        },
-        broken: {},
-      },
-    })
-
-    machine.transition('lit', 'BREAK')
-    expect(litToBrokenAction).toHaveBeenCalledTimes(1)
-    expect(litToBrokenAction).toHaveBeenCalledWith(
-      { foo: 'bar' },
-      { type: 'BREAK' }
-    )
-  })
-
-  it('should fire exit actions first, then transition actions, then entry actions', () => {
+  it('should add actions to state object in correct order, current state exit, transition actions, then next state entry', () => {
     const litExitAction = jest.fn()
     const litToBrokenAction = jest.fn()
     const brokenEntryAction = jest.fn()
     const machine = createMachine({
       id: 'light-bulb',
       initial: 'unlit',
-      context: { foo: 'bar' },
       states: {
         lit: {
           exit: [litExitAction],
@@ -156,24 +115,58 @@ describe('createMachine', () => {
       },
     })
 
-    machine.transition('lit', 'BREAK')
-    expect(litExitAction).toHaveBeenCalledTimes(1)
-    expect(litExitAction).toHaveBeenCalledWith(
-      { foo: 'bar' },
-      { type: 'BREAK' }
-    )
-    expect(litToBrokenAction).toHaveBeenCalledTimes(1)
-    expect(litToBrokenAction).toHaveBeenCalledWith(
-      { foo: 'bar' },
-      { type: 'BREAK' }
-    )
-    expect(brokenEntryAction).toHaveBeenCalledTimes(1)
-    expect(brokenEntryAction).toHaveBeenCalledWith(
-      { foo: 'bar' },
-      { type: 'BREAK' }
-    )
-    expect(litExitAction).toHaveBeenCalledBefore(litToBrokenAction)
-    expect(litToBrokenAction).toHaveBeenCalledBefore(brokenEntryAction)
+    expect(machine.transition('lit', 'BREAK')).toEqual({
+      value: 'broken',
+      actions: [
+        { type: 'mockConstructor', exec: litExitAction },
+        { type: 'mockConstructor', exec: litToBrokenAction },
+        { type: 'mockConstructor', exec: brokenEntryAction },
+      ],
+      changed: true,
+    })
+    expect(litExitAction).toHaveBeenCalledTimes(0)
+    expect(litToBrokenAction).toHaveBeenCalledTimes(0)
+    expect(brokenEntryAction).toHaveBeenCalledTimes(0)
+  })
+
+  it('should update context when it encounters an `assign` action', () => {
+    const machine = createMachine({
+      id: 'counter',
+      initial: 'idle',
+      context: {
+        count: 0,
+      },
+      states: {
+        idle: {
+          on: {
+            INCREMENT_WITH_OBJECT: {
+              target: 'idle',
+              actions: [
+                assign({
+                  count: context => context.count + 1,
+                }),
+              ],
+            },
+            INCREMENT_WITH_FUNCTION: {
+              target: 'idle',
+              actions: [
+                assign(context => ({
+                  count: context.count + 1,
+                })),
+              ],
+            },
+          },
+        },
+      },
+    })
+
+    expect(machine.initialState.context.count).toEqual(0)
+    expect(
+      machine.transition('idle', 'INCREMENT_WITH_OBJECT').context.count
+    ).toEqual(1)
+    expect(
+      machine.transition('idle', 'INCREMENT_WITH_FUNCTION').context.count
+    ).toEqual(1)
   })
 })
 
@@ -190,31 +183,72 @@ describe('interpret', () => {
 
   it('should have a currentState method that returns the current state', () => {
     expect(service.currentState).toBeDefined()
-    expect(service.currentState()).toEqual({
-      value: 'unlit',
-      context: { foo: 'bar' },
-    })
+    expect(service.currentState()).toEqual({ actions: [], value: 'unlit' })
   })
 
   it('should have a send method that receives an event and transitions the machine', () => {
     service.send('TOGGLE')
     expect(service.currentState()).toEqual({
+      actions: [],
       value: 'lit',
       changed: true,
-      context: { foo: 'bar' },
     })
     service.send('TOGGLE')
     expect(service.currentState()).toEqual({
+      actions: [],
       value: 'unlit',
       changed: true,
-      context: { foo: 'bar' },
     })
     service.send('BREAK')
     expect(service.currentState()).toEqual({
+      actions: [],
       value: 'broken',
       changed: true,
-      context: { foo: 'bar' },
     })
+  })
+
+  it('should call all actions when taking a transition via send', () => {
+    const litExitAction = jest.fn()
+    const litToBrokenAction = jest.fn()
+    const brokenEntryAction = jest.fn()
+    const machine = createMachine({
+      id: 'light-bulb',
+      initial: 'unlit',
+      states: {
+        lit: {
+          on: {
+            TOGGLE: 'unlit',
+            BREAK: 'broken',
+          },
+        },
+        unlit: {
+          exit: [litExitAction],
+          on: {
+            TOGGLE: 'lit',
+            BREAK: {
+              target: 'broken',
+              actions: [litToBrokenAction],
+            },
+          },
+        },
+        broken: {
+          entry: [brokenEntryAction],
+        },
+      },
+    })
+    service = interpret(machine)
+    service.start()
+
+    service.send('BREAK')
+
+    expect(litExitAction).toHaveBeenCalledTimes(1)
+    expect(litExitAction).toHaveBeenCalledWith(undefined, { type: 'BREAK' })
+    expect(litExitAction).toHaveBeenCalledBefore(litToBrokenAction)
+    expect(litToBrokenAction).toHaveBeenCalledTimes(1)
+    expect(litToBrokenAction).toHaveBeenCalledWith(undefined, { type: 'BREAK' })
+    expect(litToBrokenAction).toHaveBeenCalledBefore(brokenEntryAction)
+    expect(brokenEntryAction).toHaveBeenCalledTimes(1)
+    expect(brokenEntryAction).toHaveBeenCalledWith(undefined, { type: 'BREAK' })
   })
 
   it('should have a subscribe method that calls listeners on start and every transition', () => {
@@ -224,18 +258,15 @@ describe('interpret', () => {
     // Should call on start
     service.start()
     expect(listener).toHaveBeenCalledTimes(1)
-    expect(listener).toHaveBeenCalledWith({
-      value: 'unlit',
-      context: { foo: 'bar' },
-    })
+    expect(listener).toHaveBeenCalledWith({ actions: [], value: 'unlit' })
 
     // Should call on send
     service.send('TOGGLE')
     expect(listener).toHaveBeenCalledTimes(2)
     expect(listener).toHaveBeenCalledWith({
+      actions: [],
       value: 'lit',
       changed: true,
-      context: { foo: 'bar' },
     })
 
     // Unsubscribe should remove the listener
