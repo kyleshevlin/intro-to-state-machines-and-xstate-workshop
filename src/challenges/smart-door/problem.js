@@ -1,11 +1,15 @@
 const { Machine } = require('xstate')
 const { assert } = require('../../utils')
 
-// Make a door that can be
+// We're going to make a "smart" door that cannot be locked when it is open
+// It can be in the following "states", it is up to you to determine how to make
+// them work
+
 // closed && locked
 // closed && unlocked
 // opened && unlocked
-// using hierarchical states
+
+// Solve this using hiearchical state nodes
 
 // I've only given you a few of the failing assertions, but it should give you
 // an idea how to proceed
