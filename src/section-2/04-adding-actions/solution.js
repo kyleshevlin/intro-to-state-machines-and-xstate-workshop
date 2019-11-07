@@ -22,8 +22,6 @@ const toActionObject = action => {
   }
 }
 
-const identity = x => x
-
 function createMachine(config) {
   const { id, initial, states } = config
 
@@ -63,7 +61,7 @@ function createMachine(config) {
       const nextStateConfig = states[target]
       const allActions = []
         .concat(stateConfig.exit, actions, nextStateConfig.entry)
-        .filter(identity)
+        .filter(Boolean)
         .map(toActionObject)
 
       return {

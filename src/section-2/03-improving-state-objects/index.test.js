@@ -23,7 +23,7 @@ const config = {
 describe('createMachine', () => {
   it('should have an initialState property', () => {
     const machine = createMachine(config)
-    expect(machine.initialState).toEqual({ value: 'unlit' })
+    expect(machine.initialState).toEqual('unlit')
   })
 
   it('should have a defined `transition` method', () => {
@@ -33,22 +33,10 @@ describe('createMachine', () => {
 
   it('should take transition when given a valid state and event', () => {
     const machine = createMachine(config)
-    expect(machine.transition('lit', 'TOGGLE')).toEqual({
-      value: 'unlit',
-      changed: true,
-    })
-    expect(machine.transition('unlit', 'TOGGLE')).toEqual({
-      value: 'lit',
-      changed: true,
-    })
-    expect(machine.transition('lit', 'BREAK')).toEqual({
-      value: 'broken',
-      changed: true,
-    })
-    expect(machine.transition('unlit', 'BREAK')).toEqual({
-      value: 'broken',
-      changed: true,
-    })
+    expect(machine.transition('lit', 'TOGGLE')).toEqual('unlit')
+    expect(machine.transition('unlit', 'TOGGLE')).toEqual('lit')
+    expect(machine.transition('lit', 'BREAK')).toEqual('broken')
+    expect(machine.transition('unlit', 'BREAK')).toEqual('broken')
   })
 
   it('should throw an error when given an invalid state', () => {
@@ -60,18 +48,9 @@ describe('createMachine', () => {
 
   it('should not transition when given an invalid event', () => {
     const machine = createMachine(config)
-    expect(machine.transition('lit', 'INVALID_EVENT')).toEqual({
-      value: 'lit',
-      changed: false,
-    })
-    expect(machine.transition('unlit', 'INVALID_EVENT')).toEqual({
-      value: 'unlit',
-      changed: false,
-    })
-    expect(machine.transition('broken', 'INVALID_EVENT')).toEqual({
-      value: 'broken',
-      changed: false,
-    })
+    expect(machine.transition('lit', 'INVALID_EVENT')).toEqual('lit')
+    expect(machine.transition('unlit', 'INVALID_EVENT')).toEqual('unlit')
+    expect(machine.transition('broken', 'INVALID_EVENT')).toEqual('broken')
   })
 })
 
@@ -88,16 +67,16 @@ describe('interpret', () => {
 
   it('should have a currentState method that returns the current state', () => {
     expect(service.currentState).toBeDefined()
-    expect(service.currentState()).toEqual({ value: 'unlit' })
+    expect(service.currentState()).toEqual('unlit')
   })
 
   it('should have a send method that receives an event and transitions the machine', () => {
     service.send('TOGGLE')
-    expect(service.currentState()).toEqual({ value: 'lit', changed: true })
+    expect(service.currentState()).toEqual('lit')
     service.send('TOGGLE')
-    expect(service.currentState()).toEqual({ value: 'unlit', changed: true })
+    expect(service.currentState()).toEqual('unlit')
     service.send('BREAK')
-    expect(service.currentState()).toEqual({ value: 'broken', changed: true })
+    expect(service.currentState()).toEqual('broken')
   })
 
   it('should have a subscribe method that calls listeners on start and every transition', () => {
@@ -107,12 +86,12 @@ describe('interpret', () => {
     // Should call on start
     service.start()
     expect(listener).toHaveBeenCalledTimes(1)
-    expect(listener).toHaveBeenCalledWith({ value: 'unlit' })
+    expect(listener).toHaveBeenCalledWith('unlit')
 
     // Should call on send
     service.send('TOGGLE')
     expect(listener).toHaveBeenCalledTimes(2)
-    expect(listener).toHaveBeenCalledWith({ value: 'lit', changed: true })
+    expect(listener).toHaveBeenCalledWith('lit')
 
     // Unsubscribe should remove the listener
     unsubscribe()
