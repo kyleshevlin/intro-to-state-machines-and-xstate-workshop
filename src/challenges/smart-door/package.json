@@ -1,5 +1,6 @@
 {
   "scripts": {
-    "test": "../../../node_modules/.bin/jest ./index.test.js"
+    "test": "../../../node_modules/.bin/jest ./index.test.js",
+    "test:watch": "../../../node_modules/.bin/jest --watch ./index.test.js"
   }
 }
