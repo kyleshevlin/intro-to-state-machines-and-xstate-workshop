@@ -23,8 +23,14 @@ const h2oMachine = Machine({
       },
     },
     vapor: {
-      COOL: 'water',
-      DEPOSIT: 'ice',
+      on: {
+        COOL: 'water',
+        DEPOSIT: 'ice',
+      },
     },
   },
 })
+
+module.exports = {
+  h2oMachine,
+}

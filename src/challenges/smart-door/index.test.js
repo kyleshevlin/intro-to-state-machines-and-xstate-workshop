@@ -11,7 +11,7 @@ describe('smart door', () => {
     expect(doorMachine.transition('unlocked', 'LOCK').value).toEqual('locked')
     expect(
       doorMachine.transition({ unlocked: 'opened' }, 'LOCK').changed
-    ).toEqual('false')
+    ).toEqual(false)
   })
 
   it('should respond to OPEN correctly', () => {

@@ -26,3 +26,7 @@ const doorMachine = Machine({
     },
   },
 })
+
+module.exports = {
+  doorMachine,
+}

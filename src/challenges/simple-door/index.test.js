@@ -10,7 +10,7 @@ describe('doorMachine', () => {
     expect(
       doorMachine.transition({ unlocked: 'closed' }, 'OPEN').value
     ).toEqual({
-      unlocked: 'opened',
+      unlocked: { opened: 'deadboltDisengaged' },
     })
   })
 
