@@ -163,7 +163,7 @@ If we can call actions when we enter a state, then it makes sense to be able to 
 ```javascript
 const allActions = []
   .concat(stateConfig.exit, actions, nextStateConfig.entry)
-  .filter(identity)
+  .filter(Boolean)
 ```
 
 I want to take a second to point out the order of actions getting called, it always goes in this order, current state's `exit`, the transition actions, and then the next state's `entry`. This is true of XState as well, so when we get to that section of the workshop, all of this will be very familiar.
@@ -228,7 +228,7 @@ function createMachine(config) {
       //...
       const allActions = []
         .concat(stateConfig.exit, actions, nextStateConfig.entry)
-        .filter(identity)
+        .filter(Boolean)
         .map(toActionObject)
     }
   }

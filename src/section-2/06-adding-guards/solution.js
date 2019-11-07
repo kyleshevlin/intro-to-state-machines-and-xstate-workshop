@@ -22,8 +22,6 @@ const toActionObject = action => {
   }
 }
 
-const identity = x => x
-
 const ASSIGN_ACTION_TYPE = '__assign__'
 
 const assign = assignment => ({
@@ -82,7 +80,7 @@ function createMachine(config) {
           const nextStateConfig = states[target]
           const allActions = []
             .concat(stateConfig.exit, actions, nextStateConfig.entry)
-            .filter(identity)
+            .filter(Boolean)
             .map(toActionObject)
             .filter(action => {
               const { assignment, type } = action

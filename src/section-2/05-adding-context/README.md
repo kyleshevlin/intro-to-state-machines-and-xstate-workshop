@@ -136,7 +136,7 @@ Since this creates an action object, it makes sense that we need to update the c
 ```javascript
 const allActions = []
   .concat(stateConfig.exit, actions, nextStateConfig.entry)
-  .filter(identity)
+  .filter(Boolean)
   .map(toActionObject)
   .filter(action => {
     if (action.type !== ASSIGN_ACTION_TYPE) {
