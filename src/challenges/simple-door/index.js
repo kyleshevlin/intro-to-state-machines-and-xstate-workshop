@@ -1,5 +1,4 @@
 const { Machine } = require('xstate')
-const { assert } = require('../../utils')
 
 // Make a door that works like your basic door with a deadbolt lock on it.
 // The thing that makes this tricky is that the deadbolt can be engaged while
@@ -12,7 +11,7 @@ const { assert } = require('../../utils')
 // The door can not be closed if the lock is already engaged
 // The door cannot be opened if it is locked
 
-// I'll give you a passing assertion as a head start
+// Check the tests for some hints to the solution
 
 const doorMachine = Machine({
   id: 'simple-door',
@@ -20,8 +19,6 @@ const doorMachine = Machine({
   states: {},
 })
 
-assert(
-  doorMachine.transition({ unlocked: 'opened' }, 'LOCK').changed,
-  false,
-  'Cannot lock while door is opened'
-)
+module.exports = {
+  doorMachine,
+}

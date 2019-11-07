@@ -1,5 +1,4 @@
 const { Machine } = require('xstate')
-const { assert } = require('../../utils')
 
 const doorMachine = Machine({
   id: 'simple-door',
@@ -39,21 +38,3 @@ const doorMachine = Machine({
     },
   },
 })
-
-assert(
-  doorMachine.transition({ unlocked: 'opened' }, 'LOCK').changed,
-  false,
-  'Cannot lock while door is opened'
-)
-assert(
-  doorMachine.transition(
-    {
-      unlocked: {
-        opened: 'deadboltEngaged',
-      },
-    },
-    'CLOSE'
-  ).changed,
-  false,
-  'Cannot close while deadbolt is engaged'
-)

@@ -1,8 +1,11 @@
 const { Machine } = require('xstate')
-const { assert } = require('../../utils')
 
 // "Sublimation" is when matter in a solid state goes directly to a gaseous
 // state. Add a "SUBLIMATE" event and the correct transition to sublimate water
+
+// For fun, you can also add "Deposition", which is when matter in a gaseous
+// state goes directly to aa solid state. Add a "DEPOSIT" event _and_ add the
+// tests for it, too.
 
 const h2oMachine = Machine({
   id: 'h2o',
@@ -20,13 +23,13 @@ const h2oMachine = Machine({
       },
     },
     vapor: {
-      COOL: 'water',
+      on: {
+        COOL: 'water',
+      },
     },
   },
 })
 
-assert(
-  h2oMachine.transition('ice', 'SUBLIMATE').value,
-  'vapor',
-  'Sublimating H2O'
-)
+module.exports = {
+  h2oMachine,
+}
