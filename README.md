@@ -20,6 +20,10 @@ Or:
 - Use [Codesandbox](https://codesandbox.io)
 - You can fork [this template](https://codesandbox.io/s/xstate-template-9cerx) to do the exercises contained in this repo
 
+If you would like to have local access to the code and to follow along, I recommend forking this repo. If you do fork this repo, be sure to run `npm install` or `yarn install` from the root directory. This will enable you to run any tests to verify your work.
+
+IF you are working on a section or a challenge, you can easily run the tests for that section alone by changing to the correct directory and either running `npm run test` or `yarn run test`. You may also run the tests in `watch` mode by running `npm run test:watch` or `yarn run test:watch`
+
 ## Workshop Outline
 
 - Section 1
@@ -74,7 +78,9 @@ Or:
         - Updating `changed` if `assigned`
         - Passing in `context` to our `actions`
     - Adding Guards
-      - TODO:
+      - Destructure `cond` from transition object
+      - Use `cond(context, event)`
+      - Enable multiple potential transitions
 - Section 3
   - Xstate Viz
   - Hierarchical States
