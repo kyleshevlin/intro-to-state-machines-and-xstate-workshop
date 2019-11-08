@@ -73,11 +73,11 @@ function createMachine(config) {
           cond = () => true,
         } = toTransitionObject(transition)
 
-        let nextContext = context
-
         if (cond(context, eventObject)) {
           let assigned = false
+          let nextContext = context
           const nextStateConfig = states[target]
+
           const allActions = []
             .concat(stateConfig.exit, actions, nextStateConfig.entry)
             .filter(Boolean)

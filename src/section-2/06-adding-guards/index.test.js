@@ -1,3 +1,4 @@
+require('jest-extended')
 const { assign, createMachine, interpret } = require('./index')
 
 const config = {
