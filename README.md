@@ -22,7 +22,7 @@ Or:
 
 If you would like to have local access to the code and to follow along, I recommend forking this repo. If you do fork this repo, be sure to run `npm install` or `yarn install` from the root directory. This will enable you to run any tests to verify your work.
 
-IF you are working on a section or a challenge, you can easily run the tests for that section alone by changing to the correct directory and either running `npm run test` or `yarn run test`. You may also run the tests in `watch` mode by running `npm run test:watch` or `yarn run test:watch`
+If you are working on a section or a challenge, you can easily run the tests for that section alone by changing to the correct directory and either running `npm run test` or `yarn run test`. You may also run the tests in `watch` mode by running `npm run test:watch` or `yarn run test:watch`
 
 ## Workshop Outline
 
