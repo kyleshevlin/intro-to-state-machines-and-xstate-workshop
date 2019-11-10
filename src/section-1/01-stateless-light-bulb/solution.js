@@ -12,17 +12,16 @@ We can represent these stateless bulbs as functions that always return the same
 value
 */
 
-function alwaysLitBulb() {
-  return { lit: true }
+function bulbFactory(lit) {
+  return { lit }
 }
 
-function alwaysUnlitBulb() {
-  return { lit: false }
-}
+const litBulb = bulbFactory(true)
+const unlitBulb = bulbFactory(false)
 
 function lamp(bulb) {
   console.log(`Bulb is lit: ${bulb.lit}`)
 }
 
-lamp(alwaysLitBulb())
-lamp(alwaysUnlitBulb())
+lamp(litBulb)
+lamp(unlitBulb)

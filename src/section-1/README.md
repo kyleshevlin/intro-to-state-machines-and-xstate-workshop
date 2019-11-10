@@ -1,35 +1,47 @@
 # Workshop - Section 1
 ## A Journey of Discovery
 
+---
+
+First exercise, right away. You've got 2 minutes to write the best `lightBulb` function you can. Return an object that has a `lit` property that can be `console.log`ged out. You can use the `index.js` file in this directory and run `node index.js` from this directory to see your logs.
+
+---
+
 What if we didn't have "state", and things were just always what they were? That would be a bit of a strange world. Thinking about that too much might hurt your brain. But, let's consider an absurd example anyways, a light bulb.
 
 If we had a lamp in this stateless world, in order for the lamp to be on, we would give it a light bulb that was always lit, and when we needed it off, we would give it a lightbulb that was always unlit (or no bulb at all, but roll with me here).
 
-We can represent these stateless bulbs as functions that always return the same value. You can see what those look like in `stateless-light-bulb.js`.
+We can represent these stateless bulbs as functions that always return the same value.
+
+_You can see a solution to this in `01-stateless-light-bulb/solution.js`_
 
 ---
 
 Our stateless bulbs are a bit absurd, but they help us understand something about state, it's most useful when we can change it.
 
-"State" is the representation of a system at a particular point in time, in the case of the light bulb, our states are a "lit" state and an "unlit" state.
+"State" is the representation of a system at a particular point in time, in the case of the light bulb, our states are a "lit" and "unlit".
 
-Let's write a function that returns us a working light bulb. You can see what that looks like in `working-light-bulb.js`.
+Let's write a function that returns us a working, stateful light bulb.
 
----
-
-We made a working light bulb, but it's actually an inaccurate one. Light bulbs,
-at least up until recently, were pretty easy to break. Thus, we need a bulb
-that can be broken.
-
-Let's try and write a function that represents this. You can see that in `more-accurate-bulb.js`.
+_You can see a solution to this in `02-working-light-bulb/solution.js`_
 
 ---
 
-Now, we've run into a problem, an impossible state has occured with our light bulb where it is both lit and broken. I want you to take a few minutes and try and solve our `moreAccurateBulb` function to keep us from getting into impossible states.
+A working light bulb is a great light bulb, _but_ it's not actually an accurate one. Light bulbs, at least up until recently, were pretty easy to break. Thus, we need a bulb that can be broken.
+
+Let's try and write a function that represents this.
+
+_You can see a solution to this in `03-more-accurate-bulb/solution.js`_
 
 ---
 
-Let's work through some adjustments to `moreAccurateBulb` until we have a slightly better bulb
+Now, we've run into a problem, an impossible state has occured with our light bulb where it is both lit and broken.
+
+Second exercise, what can we do to fix our more accurate light bulb?
+
+Let's work through some adjustments to `moreAccurateBulb` until we have a slightly better bulb.
+
+_You can see a solution to this in `04-fixing-more-accurate-bulb/solution.js`_
 
 ---
 
@@ -37,16 +49,14 @@ Why was this challenging? This tweet contains some of the answer: [https://twitt
 
 > The simplest state machine is a boolean variable. The most complex state machine is multiple boolean variables.
 
-David likes to make jokes, but this joke is pretty accurate, too. Doing some math explains to us why.
+David likes to make jokes, but this joke is pretty accurate, too. Doing some math explains why.
 
-Every boolean represents two states. For every boolean we add, we double the amount of states in the machine.
+Every boolean represents two states. For every boolean we add, we don't merely double the amount of possible states, they increase at a rate of `2**n` where `n` equals the number of booleans.
 
 - 1 boolean = 2 states
 - 2 booleans = 4 states
 - 3 booleans = 8 states
 - 4 booleans = 16 states
-
-Boolean state complexity increases by 2^^n where _n_ equals the number of booleans you have.
 
 But does our light bulb _really_ have 4 states? No, it really has only three. We know that `(isLit && isBroken) === true` is an _impossible_ state.
 
@@ -55,6 +65,10 @@ But does our light bulb _really_ have 4 states? No, it really has only three. We
 | isLit: true, isBroken: true  | isLit: false, isBroken: true  |
 
 That bottom-left "state" is impossible. What if we found a way to enumerate only the _possible_ states?
+
+Let's try and rewrite our `lightBulb` so that it can only return possible states.
+
+_You can see a solution to this in `05-better-bulb/solution.js`_
 
 ---
 
