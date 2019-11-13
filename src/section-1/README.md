@@ -1,4 +1,5 @@
 # Workshop - Section 1
+
 ## A Journey of Discovery
 
 ---
@@ -58,6 +59,8 @@ Every boolean represents two states. For every boolean we add, we don't merely d
 - 3 booleans = 8 states
 - 4 booleans = 16 states
 
+Another Dave, [Dave Geddes](https://twitter.com/geddski) to be precise, made a nice Twitter thread about this boolean explosion [https://twitter.com/geddski/status/1168976900552822784](https://twitter.com/geddski/status/1168976900552822784).
+
 But does our light bulb _really_ have 4 states? No, it really has only three. We know that `(isLit && isBroken) === true` is an _impossible_ state.
 
 | isLit: true, isBroken: false | isLit: false, isBroken: false |
@@ -78,10 +81,11 @@ You can see the solution in `better-bulb.js`
 It's worth pointing out that we've made a distinctly different data structure for our "state" with this function. For starters, we only have our three states, `lit`, `unlit`, and `broken`. We've also made it clear that there are a finite number of ways we can move from one state to another. Look through the code and take a minute to define these transitions.
 
 We can do the following:
-* `lit -> unlit`
-* `unlit -> lit`
-* `lit -> broken`
-* `unlit -> broken`
+
+- `lit -> unlit`
+- `unlit -> lit`
+- `lit -> broken`
+- `unlit -> broken`
 
 That's it! We only have four possible transitions. So we have a distinct set of states, and a distinct set of transitions between those states, does anyone know what data structure we have?
 

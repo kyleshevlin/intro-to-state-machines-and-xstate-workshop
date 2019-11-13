@@ -5,7 +5,8 @@ I'd like to take a second to go back and make some updates to the `state` we ret
 Let's start by returning an object with a `value` property instead of a string. To do this, we'll have to update every where that returns a state to return an object. Because we want to be able to pass states returned from `transition` back into the machine, we'll need a way to handle when `transition` is handed either a string or an object for a state. To do that, we'll write a simple helper function `toStateObject`
 
 ```javascript
-const toStateObject = state => typeof state === 'string' ? { value: state } : state
+const toStateObject = state =>
+  typeof state === 'string' ? { value: state } : state
 ```
 
 Then we can use it at the top of our `transition` method.
@@ -33,4 +34,10 @@ bulbService.subscribe(state => {
 
 It's a bit weird that we'd have to trigger a function through a subscription like that. I wonder if there's something we can do to change that? We'll tackle that next.
 
-TODO: `matches`
+We can also add a nice bit of functionality by adding a `matches` method so that we can determine if this state matches a particular value. To do this, we create a `createMatcher` factory function, like so:
+
+```javascript
+const createMatcher = value => stateValue => value === stateValue
+```
+
+We then supply each object with `matches: createMatcher(theValue)` key/value pair.
